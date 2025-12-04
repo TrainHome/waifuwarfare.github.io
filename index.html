@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Waifu Warfare: Tower Tactics - Предрегистрация</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Шапка сайта -->
@@ -20,8 +20,8 @@
                         <li><a href="#about">Об игре</a></li>
                         <li><a href="#features">Особенности</a></li>
                         <li><a href="#characters">Персонажи</a></li>
-                        <li><a href="#preregiindexation">Предрегистрация</a></li>
-                        <li><a href="#" class="nav-btn">Скачать</a></li>
+                        <li><a href="#preregistration">Предрегистрация</a></li>
+                        <li><a href="download.html" class="nav-btn">Скачать</a></li>
                     </ul>
                 </nav>
             </div>
@@ -37,7 +37,7 @@
                 <p class="hero-description">Соберите свою коллекцию уникальных вайфу и разработайте непобедимую тактику! Вас ждут эпические сражения на башнях, стратегическое планирование и захватывающий геймплей в стиле аниме.</p>
                 
                 <div class="hero-btns">
-                    <a href="#preregiindexation" class="btn-primary">Предзарегистрироваться</a>
+                    <a href="#preregistration" class="btn-primary">Предзарегистрироваться</a>
                 </div>
                 
                 <div class="countdown">
@@ -63,7 +63,7 @@
     </section>
 
     <!-- Форма предрегистрации -->
-    <section class="preregiindexation" id="preregiindexation">
+    <section class="preregistration" id="preregistration">
         <div class="container">
             <h2 class="section-title">Предрегистрация</h2>
             <div class="form-container">
@@ -195,10 +195,10 @@
             const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
             
-            document.getElementById('days').textContent = days.toindexing().padStart(2, '0');
-            document.getElementById('hours').textContent = hours.toindexing().padStart(2, '0');
-            document.getElementById('minutes').textContent = minutes.toindexing().padStart(2, '0');
-            document.getElementById('seconds').textContent = seconds.toindexing().padStart(2, '0');
+            document.getElementById('days').textContent = days.toString().padStart(2, '0');
+            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
         }
         
         setInterval(updateCountdown, 1000);
