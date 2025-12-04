@@ -38,14 +38,9 @@
                 
                 <div class="hero-btns">
                     <a href="#preregistration" class="btn-primary">Предзарегистрироваться</a>
-                    <a href="#view-registrations" class="btn-secondary">Статистика регистраций</a>
                 </div>
                 
                 <div class="countdown">
-                    <div class="countdown-item">
-                        <div class="countdown-number" id="total-registrations">0</div>
-                        <div class="countdown-label">Зарегистрировано</div>
-                    </div>
                     <div class="countdown-item">
                         <div class="countdown-number" id="days">00</div>
                         <div class="countdown-label">Дней</div>
@@ -58,6 +53,10 @@
                         <div class="countdown-number" id="minutes">00</div>
                         <div class="countdown-label">Минут</div>
                     </div>
+                    <div class="countdown-item">
+                        <div class="countdown-number" id="seconds">00</div>
+                        <div class="countdown-label">Секунд</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -68,84 +67,68 @@
         <div class="container">
             <h2 class="section-title">Предрегистрация</h2>
             <div class="form-container">
-                <form id="prereg-form">
+                <!-- Замените FORM_ID на ID вашей Google Forms -->
+                <form id="prereg-form" action="https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse" method="POST" target="hidden_iframe">
+                    <!-- Поле для email -->
                     <div class="form-group">
                         <label for="email">Email адрес</label>
-                        <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                        <input type="email" id="email" name="entry.1234567890" placeholder="your@email.com" required>
+                        <!-- Замените entry.1234567890 на ID поля из Google Forms -->
                     </div>
                     
+                    <!-- Поле для имени игрока -->
                     <div class="form-group">
                         <label for="username">Желаемое имя игрока</label>
-                        <input type="text" id="username" name="username" placeholder="Введите имя командира" required>
+                        <input type="text" id="username" name="entry.0987654321" placeholder="Введите имя командира" required>
+                        <!-- Замените entry.0987654321 на ID поля из Google Forms -->
                     </div>
                     
+                    <!-- Выбор платформы -->
                     <div class="form-group">
                         <label>Предпочитаемая платформа</label>
                         <div class="platforms">
-                            <div class="platform" onclick="selectPlatform(this)">
-                                <input type="radio" name="platform" value="pc" required>
+                            <div class="platform" onclick="selectPlatform(this, 'pc')">
+                                <input type="radio" name="entry.1122334455" value="PC" required>
+                                <!-- Замените entry.1122334455 на ID поля из Google Forms -->
                                 <i class="fas fa-desktop"></i>
                                 <span>PC</span>
                             </div>
-                            <div class="platform" onclick="selectPlatform(this)">
-                                <input type="radio" name="platform" value="mobile" required>
+                            <div class="platform" onclick="selectPlatform(this, 'mobile')">
+                                <input type="radio" name="entry.1122334455" value="Mobile">
                                 <i class="fas fa-mobile-alt"></i>
                                 <span>Mobile</span>
                             </div>
                         </div>
                     </div>
                     
+                    <!-- Выбор региона -->
                     <div class="form-group">
                         <label for="region">Регион</label>
-                        <select id="region" name="region" required>
+                        <select id="region" name="entry.5566778899" required>
+                            <!-- Замените entry.5566778899 на ID поля из Google Forms -->
                             <option value="" disabled selected>Выберите регион</option>
-                            <option value="eu">Европа</option>
-                            <option value="na">Северная Америка</option>
-                            <option value="asia">Азия</option>
-                            <option value="other">Другой</option>
+                            <option value="Европа">Европа</option>
+                            <option value="Северная Америка">Северная Америка</option>
+                            <option value="Азия">Азия</option>
+                            <option value="Другой">Другой</option>
                         </select>
                     </div>
+                    
+                    <!-- Скрытые поля для времени -->
+                    <input type="hidden" id="timestamp" name="entry.6677889900" value="">
+                    <input type="hidden" id="user_agent" name="entry.7788990011" value="">
                     
                     <button type="submit" class="submit-btn">
                         <span id="submit-text">Забронировать место</span>
                         <span id="loading-spinner" style="display: none;">
-                            <i class="fas fa-spinner fa-spin"></i> Сохранение на сервере...
+                            <i class="fas fa-spinner fa-spin"></i> Отправка...
                         </span>
                     </button>
                     <div id="form-message" style="margin-top: 15px; display: none;"></div>
                 </form>
-            </div>
-        </div>
-    </section>
-
-    <!-- Секция статистики регистраций -->
-    <section class="features" id="view-registrations" style="padding: 80px 0;">
-        <div class="container">
-            <h2 class="section-title">Статистика регистраций</h2>
-            <div style="text-align: center; margin-bottom: 40px;">
-                <button onclick="loadRegistrations()" class="btn-primary">
-                    <i class="fas fa-sync-alt"></i> Обновить статистику
-                </button>
-                <div style="margin-top: 20px; display: inline-block; background: rgba(255,215,0,0.1); padding: 15px 30px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.3);">
-                    <div style="color: #FFE866; font-size: 0.9rem;">Всего зарегистрировано:</div>
-                    <div style="color: var(--primary); font-size: 2rem; font-weight: bold;" id="stats-count">0</div>
-                </div>
-            </div>
-            
-            <div id="stats-container" style="display: none;">
-                <div class="form-container">
-                    <h3 style="text-align: center; margin-bottom: 20px; color: var(--primary);">
-                        Последние регистрации
-                    </h3>
-                    <div id="stats-list" style="max-height: 400px; overflow-y: auto; padding: 10px;">
-                        <!-- Список регистраций будет здесь -->
-                    </div>
-                    <div style="text-align: center; margin-top: 20px;">
-                        <small style="color: #AAAAAA;">
-                            <i class="fas fa-info-circle"></i> Данные хранятся на сервере в папке registrations/
-                        </small>
-                    </div>
-                </div>
+                
+                <!-- Скрытый iframe для отправки формы -->
+                <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
             </div>
         </div>
     </section>
@@ -155,7 +138,6 @@
         <div class="container">
             <h2 class="section-title">Особенности игры</h2>
             <div class="features-grid">
-                <!-- ... существующие карточки особенностей ... -->
                 <div class="feature-card">
                     <div class="feature-icon">👑</div>
                     <h3>Коллекция вайфу</h3>
@@ -204,9 +186,9 @@
                 </div>
                 
                 <div class="footer-links">
-                    <a href="admin.php" target="_blank">Админ-панель</a>
-                    <a href="#">Политика конфиденциальности</a>
-                    <a href="#">Условия использования</a>
+                    <a href="#" onclick="downloadPrivacyPolicy()">Политика конфиденциальности</a>
+                    <a href="#" onclick="downloadTerms()">Условия использования</a>
+                    <a href="https://forms.gle/YOUR_FORM_LINK" target="_blank">Посмотреть регистрации</a>
                     <a href="#">Поддержка</a>
                     <a href="#">О нас</a>
                 </div>
@@ -238,85 +220,25 @@
             document.getElementById('days').textContent = days.toString().padStart(2, '0');
             document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
             document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
         }
         
         setInterval(updateCountdown, 1000);
         updateCountdown();
         
-        // Загружаем статистику при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            loadRegistrations();
-        });
-        
         // Выбор платформы
-        function selectPlatform(element) {
+        function selectPlatform(element, value) {
             const platforms = document.querySelectorAll('.platform');
             platforms.forEach(platform => platform.classList.remove('selected'));
             element.classList.add('selected');
             element.querySelector('input').checked = true;
         }
         
-        // Загрузить статистику регистраций с сервера
-        async function loadRegistrations() {
-            try {
-                const response = await fetch('get_registrations.php');
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Обновляем счетчик
-                    document.getElementById('total-registrations').textContent = data.count;
-                    document.getElementById('stats-count').textContent = data.count;
-                    
-                    // Показываем последние регистрации
-                    const statsList = document.getElementById('stats-list');
-                    const statsContainer = document.getElementById('stats-container');
-                    
-                    if (data.count > 0) {
-                        let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">';
-                        
-                        // Показываем только последние 10 регистраций
-                        const recentRegistrations = data.files.slice(0, 10);
-                        
-                        recentRegistrations.forEach((reg, index) => {
-                            html += `
-                                <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2);">
-                                    <div style="color: var(--primary); font-weight: bold; margin-bottom: 10px; font-size: 0.9rem;">
-                                        <i class="fas fa-user"></i> ${reg.username}
-                                    </div>
-                                    <div style="margin-bottom: 5px; font-size: 0.85rem;">
-                                        <i class="fas fa-envelope"></i> ${reg.email}
-                                    </div>
-                                    <div style="margin-bottom: 5px; font-size: 0.85rem;">
-                                        <i class="fas fa-desktop"></i> ${reg.platform}
-                                    </div>
-                                    <div style="margin-bottom: 5px; font-size: 0.85rem;">
-                                        <i class="fas fa-globe"></i> ${reg.region}
-                                    </div>
-                                    <div style="font-size: 0.75em; color: #AAAAAA; margin-top: 8px;">
-                                        <i class="fas fa-clock"></i> ${reg.timestamp}
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        
-                        html += '</div>';
-                        statsList.innerHTML = html;
-                        statsContainer.style.display = 'block';
-                    } else {
-                        statsList.innerHTML = '<p style="text-align: center; color: #FFE866;">Нет зарегистрированных игроков</p>';
-                        statsContainer.style.display = 'block';
-                    }
-                } else {
-                    console.error('Ошибка загрузки статистики:', data.message);
-                }
-            } catch (error) {
-                console.error('Ошибка при загрузке статистики:', error);
-            }
-        }
-        
         // Обработка формы
-        document.getElementById('prereg-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        document.getElementById('prereg-form').addEventListener('submit', function(e) {
+            // Устанавливаем значения скрытых полей
+            document.getElementById('timestamp').value = new Date().toISOString();
+            document.getElementById('user_agent').value = navigator.userAgent;
             
             const submitBtn = document.querySelector('.submit-btn');
             const submitText = document.getElementById('submit-text');
@@ -329,61 +251,92 @@
             submitBtn.disabled = true;
             messageDiv.style.display = 'none';
             
-            // Собираем данные формы
-            const formData = new FormData(this);
-            
-            try {
-                // Отправляем данные на сервер
-                const response = await fetch('save_registration.php', {
-                    method: 'POST',
-                    body: formData
-                });
+            // Слушаем событие загрузки iframe
+            document.getElementById('hidden_iframe').onload = function() {
+                submitText.style.display = 'inline';
+                loadingSpinner.style.display = 'none';
+                submitBtn.disabled = false;
                 
-                const result = await response.json();
-                
-                // Показываем сообщение
+                // Показываем сообщение об успехе
                 messageDiv.style.display = 'block';
                 messageDiv.style.padding = '12px';
                 messageDiv.style.borderRadius = '8px';
                 messageDiv.style.textAlign = 'center';
                 messageDiv.style.fontWeight = '500';
+                messageDiv.style.color = '#4CAF50';
+                messageDiv.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
+                messageDiv.style.border = '1px solid #4CAF50';
                 
-                if (result.success) {
-                    messageDiv.style.color = '#4CAF50';
-                    messageDiv.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
-                    messageDiv.style.border = '1px solid #4CAF50';
-                    messageDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${result.message}`;
-                    
-                    // Обновляем статистику
-                    loadRegistrations();
-                    
-                    // Очищаем форму
-                    this.reset();
-                    document.querySelectorAll('.platform').forEach(p => p.classList.remove('selected'));
-                    
-                    // Прокручиваем к сообщению
-                    messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } else {
-                    messageDiv.style.color = '#f44336';
-                    messageDiv.style.backgroundColor = 'rgba(244, 67, 54, 0.1)';
-                    messageDiv.style.border = '1px solid #f44336';
-                    messageDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${result.message}`;
-                }
+                const username = document.getElementById('username').value;
+                const email = document.getElementById('email').value;
+                messageDiv.innerHTML = `<i class="fas fa-check-circle"></i> Спасибо за предрегистрацию, командир ${username}! Данные сохранены в Google Forms.`;
                 
-            } catch (error) {
-                messageDiv.style.display = 'block';
-                messageDiv.style.color = '#f44336';
-                messageDiv.style.backgroundColor = 'rgba(244, 67, 54, 0.1)';
-                messageDiv.style.border = '1px solid #f44336';
-                messageDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> Ошибка соединения с сервером. Пожалуйста, попробуйте позже.`;
-                console.error('Ошибка:', error);
-            } finally {
-                // Скрываем индикатор загрузки
-                submitText.style.display = 'inline';
-                loadingSpinner.style.display = 'none';
-                submitBtn.disabled = false;
-            }
+                // Очищаем форму
+                document.getElementById('prereg-form').reset();
+                document.querySelectorAll('.platform').forEach(p => p.classList.remove('selected'));
+                
+                // Прокручиваем к сообщению
+                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            };
         });
+        
+        // Скачать политику конфиденциальности
+        function downloadPrivacyPolicy() {
+            const content = `ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ
+
+Waifu Warfare: Tower Tactics
+
+1. Сбор данных через Google Forms
+Данные собираются через Google Forms и хранятся на серверах Google.
+Мы собираем только необходимую информацию для предварительной регистрации.
+
+2. Использование данных
+Данные используются исключительно для:
+- Уведомления о запуске игры
+- Предоставления доступа к демо-версии
+- Статистики и анализа интереса к игре
+
+3. Доступ к данным
+Доступ к данным имеют только администраторы проекта через Google Forms.
+
+Дата последнего обновления: ${new Date().toLocaleDateString('ru-RU')}`;
+            
+            downloadFile(content, 'privacy_policy.txt');
+        }
+        
+        // Скачать условия использования
+        function downloadTerms() {
+            const content = `УСЛОВИЯ ИСПОЛЬЗОВАНИЯ
+
+Waifu Warfare: Tower Tactics
+
+1. Общие положения
+Предварительная регистрация не гарантирует доступ к полной версии игры.
+
+2. Ограничения
+Игра предназначена для пользователей старше 12 лет.
+
+3. Контактная информация
+По вопросам предварительной регистрации обращайтесь через сайт.
+
+Дата последнего обновления: ${new Date().toLocaleDateString('ru-RU')}`;
+            
+            downloadFile(content, 'terms_of_use.txt');
+        }
+        
+        // Функция для скачивания файла
+        function downloadFile(content, filename) {
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
         
         // Изменение шапки при прокрутке
         window.addEventListener('scroll', function() {
