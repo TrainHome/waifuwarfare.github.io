@@ -1347,3 +1347,111 @@
                 grid-template-columns: 1fr;
             }
         }
+
+/* Стили для сообщений формы */
+#form-message {
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+#form-message.success {
+    color: #4CAF50;
+    background-color: rgba(76, 175, 80, 0.1);
+    border: 1px solid #4CAF50;
+}
+
+#form-message.error {
+    color: #f44336;
+    background-color: rgba(244, 67, 54, 0.1);
+    border: 1px solid #f44336;
+}
+
+#form-message i {
+    margin-right: 8px;
+}
+
+.submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Индикатор загрузки */
+.fa-spinner {
+    margin-right: 8px;
+}
+
+/* Стили для секции регистраций */
+#registrations-container {
+    animation: fadeIn 0.5s ease;
+}
+
+#registrations-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+/* Стили для карточек регистраций */
+.registration-card {
+    background: rgba(0,0,0,0.3);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,215,0,0.2);
+    margin-bottom: 15px;
+}
+
+.registration-card:last-child {
+    margin-bottom: 0;
+}
+
+.registration-card-header {
+    color: var(--primary);
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.registration-field {
+    margin-bottom: 5px;
+    display: flex;
+}
+
+.field-label {
+    color: #FFE866;
+    min-width: 100px;
+}
+
+.field-value {
+    color: white;
+    flex: 1;
+}
+
+.registration-timestamp {
+    font-size: 0.8em;
+    color: #AAAAAA;
+    margin-top: 10px;
+    text-align: right;
+}
+
+/* Стили для скроллбара */
+#registrations-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+#registrations-list::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px;
+}
+
+#registrations-list::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
