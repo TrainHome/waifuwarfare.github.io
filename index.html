@@ -33,6 +33,15 @@
             opacity: 0.6;
             cursor: not-allowed;
         }
+        #debug-info {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -145,8 +154,21 @@
                             <i class="fas fa-spinner fa-spin"></i> Регистрируем...
                         </span>
                     </button>
+                    
                     <div id="form-message" style="margin-top: 15px; display: none;"></div>
+                    
+                    <!-- Отладочная информация (скрыта по умолчанию) -->
+                    <div id="debug-info">
+                        <strong>Отладка:</strong>
+                        <div id="debug-log"></div>
+                    </div>
                 </form>
+                
+                <!-- Ссылка для принудительной очистки данных (только для тестирования) -->
+                <div style="text-align: center; margin-top: 20px; font-size: 0.8rem;">
+                    <a href="#" onclick="testAPI(); return false;">Тест API</a> | 
+                    <a href="https://docs.google.com/spreadsheets/d/1o9T6bctuz0LmBtLjgRE4iF-2U1P6EGQm3LX9gnN-1S0/edit#gid=0" target="_blank">Посмотреть таблицу</a>
+                </div>
             </div>
         </div>
     </section>
@@ -224,8 +246,18 @@
     </footer>
 
     <script>
-        // URL вашего Google Apps Script
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxdIbsw2IpuPA2-5tr07vvQpbVAfNMZ4NlfFwtZV9BcDkH8YP9uOMZ85dn8RSFd9zTV/exec';
+        // URL вашего Google Apps Script (ОБНОВЛЕНО!)
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzy5-VkDA0klcXXPJZy2gmTpe4_o2wn7o7vmzCg7RYHmOUT7uvMTRf0ntviAH0IGrcA/exec';
+        
+        // Функция для логирования отладки
+        function logDebug(message) {
+            console.log('[DEBUG]', message);
+            const debugLog = document.getElementById('debug-log');
+            if (debugLog) {
+                debugLog.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+                document.getElementById('debug-info').style.display = 'block';
+            }
+        }
         
         // Таймер обратного отсчета
         function updateCountdown() {
@@ -293,8 +325,11 @@
             
             emailTimeout = setTimeout(async () => {
                 try {
+                    logDebug(`Проверка email: ${email}`);
                     const response = await fetch(`${API_URL}?action=check&email=${encodeURIComponent(email)}`);
                     const data = await response.json();
+                    
+                    logDebug(`Ответ проверки email: ${JSON.stringify(data)}`);
                     
                     if (data.email_exists) {
                         showStatus('email-status', 'Этот email уже зарегистрирован', 'error');
@@ -302,6 +337,7 @@
                         showStatus('email-status', '✓ Email свободен', 'success');
                     }
                 } catch (error) {
+                    logDebug(`Ошибка проверки email: ${error}`);
                     showStatus('email-status', 'Ошибка проверки', 'error');
                 }
             }, 800);
@@ -340,8 +376,11 @@
             
             usernameTimeout = setTimeout(async () => {
                 try {
+                    logDebug(`Проверка имени: ${username}`);
                     const response = await fetch(`${API_URL}?action=check&username=${encodeURIComponent(username)}`);
                     const data = await response.json();
+                    
+                    logDebug(`Ответ проверки имени: ${JSON.stringify(data)}`);
                     
                     if (data.username_exists) {
                         showStatus('username-status', 'Это имя уже занято', 'error');
@@ -349,6 +388,7 @@
                         showStatus('username-status', '✓ Имя свободно', 'success');
                     }
                 } catch (error) {
+                    logDebug(`Ошибка проверки имени: ${error}`);
                     showStatus('username-status', 'Ошибка проверки', 'error');
                 }
             }, 800);
@@ -404,6 +444,8 @@
             const platform = document.querySelector('input[name="platform"]:checked').value;
             const region = document.getElementById('region').value;
             
+            logDebug(`Начинаем регистрацию: ${email}, ${username}, ${platform}, ${region}`);
+            
             // Показываем индикатор загрузки
             submitText.style.display = 'none';
             loadingSpinner.style.display = 'inline';
@@ -419,8 +461,12 @@
                 params.append('platform', platform);
                 params.append('region', region);
                 
+                logDebug(`Отправка запроса на: ${API_URL}?${params.toString()}`);
+                
                 const response = await fetch(`${API_URL}?${params.toString()}`);
                 const result = await response.json();
+                
+                logDebug(`Ответ от сервера: ${JSON.stringify(result)}`);
                 
                 if (result.success) {
                     showMessage(`Успешная регистрация, командир ${username}!`, 'success');
@@ -438,10 +484,13 @@
                     showMessage('Это имя уже занято', 'error');
                     showStatus('username-status', 'Это имя уже занято', 'error');
                 } else {
-                    showMessage('Ошибка регистрации: ' + (result.error || 'Неизвестная ошибка'), 'error');
+                    const errorMsg = result.error || 'Неизвестная ошибка';
+                    showMessage('Ошибка регистрации: ' + errorMsg, 'error');
+                    logDebug(`Ошибка регистрации: ${errorMsg}`);
                 }
                 
             } catch (error) {
+                logDebug(`Ошибка сети: ${error}`);
                 console.error('Registration error:', error);
                 showMessage('Ошибка сети. Проверьте интернет и попробуйте снова.', 'error');
             } finally {
@@ -475,6 +524,41 @@
             
             // Прокручиваем к сообщению
             messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        // Тест API функции
+        async function testAPI() {
+            logDebug('Тестирование API...');
+            
+            try {
+                // Тест проверки
+                const testEmail = 'test@example.com';
+                const testUsername = 'TestPlayer';
+                
+                // Проверка email
+                logDebug(`Тест проверки email: ${testEmail}`);
+                const checkEmailResponse = await fetch(`${API_URL}?action=check&email=${encodeURIComponent(testEmail)}`);
+                const checkEmailData = await checkEmailResponse.json();
+                logDebug(`Результат проверки email: ${JSON.stringify(checkEmailData)}`);
+                
+                // Проверка имени
+                logDebug(`Тест проверки имени: ${testUsername}`);
+                const checkUsernameResponse = await fetch(`${API_URL}?action=check&username=${encodeURIComponent(testUsername)}`);
+                const checkUsernameData = await checkUsernameResponse.json();
+                logDebug(`Результат проверки имени: ${JSON.stringify(checkUsernameData)}`);
+                
+                // Тест пустого запроса
+                logDebug('Тест пустого запроса...');
+                const emptyResponse = await fetch(`${API_URL}?action=test`);
+                const emptyData = await emptyResponse.json();
+                logDebug(`Результат пустого запроса: ${JSON.stringify(emptyData)}`);
+                
+                showMessage('Тест API выполнен успешно. Проверьте консоль для подробностей.', 'success');
+                
+            } catch (error) {
+                logDebug(`Ошибка теста API: ${error}`);
+                showMessage('Ошибка теста API. Проверьте консоль.', 'error');
+            }
         }
         
         // Скачать политику конфиденциальности
@@ -546,6 +630,10 @@ Waifu Warfare: Tower Tactics
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Registration system loaded');
             checkFormValidity();
+            
+            // Показать URL для отладки
+            logDebug(`API URL: ${API_URL}`);
+            logDebug(`Таблица: https://docs.google.com/spreadsheets/d/1o9T6bctuz0LmBtLjgRE4iF-2U1P6EGQm3LX9gnN-1S0/edit`);
         });
     </script>
 </body>
