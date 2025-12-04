@@ -1,70 +1,583 @@
-<?php
-$filename = 'registration.txt';
-
-if (!file_exists($filename)) {
-    echo "<h1>Нет зарегистрированных игроков</h1>";
-    echo "<p>Файл регистраций пока пуст.</p>";
-    exit;
-}
-
-$content = file_get_contents($filename);
-?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Список регистраций - Waifu Warfare</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #000;
-            color: white;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: rgba(42, 42, 42, 0.9);
-            padding: 30px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-        }
-        h1 {
-            color: #FFD700;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        pre {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            border-radius: 10px;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            border: 1px solid rgba(255, 215, 0, 0.2);
-        }
-        .back-link {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #FFD700, #E6C200);
-            color: black;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        .back-link:hover {
-            transform: translateY(-2px);
-        }
-    </style>
+    <title>Waifu Warfare: Tower Tactics - Предрегистрация</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Список предрегистраций Waifu Warfare: Tower Tactics</h1>
-        <pre><?php echo htmlspecialchars($content); ?></pre>
-        <a href="index.html" class="back-link">Вернуться на главную</a>
-    </div>
+    <!-- Шапка сайта -->
+    <header id="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">
+                    <div class="logo-text">Waifu<span>Warfare</span></div>
+                </a>
+                <nav>
+                    <ul>
+                        <li><a href="#about">Об игре</a></li>
+                        <li><a href="#features">Особенности</a></li>
+                        <li><a href="#characters">Персонажи</a></li>
+                        <li><a href="#preregistration">Предрегистрация</a></li>
+                        <li><a href="download.html" class="nav-btn">Скачать</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Герой-секция -->
+    <section class="hero" id="about">
+        <div class="container">
+            <div class="hero-content floating">
+                <h1 class="hero-title">Waifu Warfare: Tower Tactics</h1>
+                <p class="hero-subtitle">Стратегические битвы в анимо-стиле</p>
+                <p class="hero-description">Соберите свою коллекцию уникальных вайфу и разработайте непобедимую тактику! Вас ждут эпические сражения на башнях, стратегическое планирование и захватывающий геймплей в стиле аниме.</p>
+                
+                <div class="hero-btns">
+                    <a href="#preregistration" class="btn-primary">Предзарегистрироваться</a>
+                    <a href="#view-registrations" class="btn-secondary">Посмотреть регистрации</a>
+                </div>
+                
+                <div class="countdown">
+                    <div class="countdown-item">
+                        <div class="countdown-number" id="days">00</div>
+                        <div class="countdown-label">Дней</div>
+                    </div>
+                    <div class="countdown-item">
+                        <div class="countdown-number" id="hours">00</div>
+                        <div class="countdown-label">Часов</div>
+                    </div>
+                    <div class="countdown-item">
+                        <div class="countdown-number" id="minutes">00</div>
+                        <div class="countdown-label">Минут</div>
+                    </div>
+                    <div class="countdown-item">
+                        <div class="countdown-number" id="seconds">00</div>
+                        <div class="countdown-label">Секунд</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Форма предрегистрации -->
+    <section class="preregistration" id="preregistration">
+        <div class="container">
+            <h2 class="section-title">Предрегистрация</h2>
+            <div class="form-container">
+                <form id="prereg-form">
+                    <div class="form-group">
+                        <label for="email">Email адрес</label>
+                        <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="username">Желаемое имя игрока</label>
+                        <input type="text" id="username" name="username" placeholder="Введите имя командира" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Предпочитаемая платформа</label>
+                        <div class="platforms">
+                            <div class="platform" onclick="selectPlatform(this)">
+                                <input type="radio" name="platform" value="pc" required>
+                                <i class="fas fa-desktop"></i>
+                                <span>PC</span>
+                            </div>
+                            <div class="platform" onclick="selectPlatform(this)">
+                                <input type="radio" name="platform" value="mobile" required>
+                                <i class="fas fa-mobile-alt"></i>
+                                <span>Mobile</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="region">Регион</label>
+                        <select id="region" name="region" required>
+                            <option value="" disabled selected>Выберите регион</option>
+                            <option value="eu">Европа</option>
+                            <option value="na">Северная Америка</option>
+                            <option value="asia">Азия</option>
+                            <option value="other">Другой</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        <span id="submit-text">Забронировать место</span>
+                        <span id="loading-spinner" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i> Отправка...
+                        </span>
+                    </button>
+                    <div id="form-message" style="margin-top: 15px; display: none;"></div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Секция просмотра регистраций -->
+    <section class="features" id="view-registrations" style="padding: 80px 0;">
+        <div class="container">
+            <h2 class="section-title">Зарегистрированные игроки</h2>
+            <div style="text-align: center; margin-bottom: 40px;">
+                <button onclick="viewRegistrations()" class="btn-primary">
+                    <i class="fas fa-eye"></i> Посмотреть все регистрации
+                </button>
+                <button onclick="downloadRegistrations()" class="btn-secondary" style="margin-left: 20px;">
+                    <i class="fas fa-download"></i> Скачать файл регистраций
+                </button>
+                <button onclick="clearLocalStorage()" class="btn-telegram" style="margin-left: 20px; background: linear-gradient(135deg, #f44336, #d32f2f);">
+                    <i class="fas fa-trash"></i> Очистить данные (тест)
+                </button>
+            </div>
+            
+            <div id="registrations-container" style="display: none;">
+                <div class="form-container">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: var(--primary);">
+                        Список предрегистраций (<span id="registrations-count">0</span>)
+                    </h3>
+                    <div id="registrations-list" style="max-height: 400px; overflow-y: auto; padding: 10px;">
+                        <!-- Список регистраций будет здесь -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Особенности игры -->
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title">Особенности игры</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">👑</div>
+                    <h3>Коллекция вайфу</h3>
+                    <p>Собирайте уникальных персонажей с разными способностями и стилями аниме-арта.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🏰</div>
+                    <h3>Тактика башен</h3>
+                    <p>Разрабатывайте стратегии защиты и атаки на многоуровневых башенных картах.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">⚔️</div>
+                    <h3>Динамичные бои</h3>
+                    <p>Реальные тактические сражения с элементами RPG и стратегии в реальном времени.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Аниме-стиль</h3>
+                    <p>Потрясающая графика в стиле аниме с детализированными персонажами и локациями.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>PvP и PvE режимы</h3>
+                    <p>Сражайтесь с другими игроками или проходите захватывающие PvE кампании.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>Прокачка и развитие</h3>
+                    <p>Улучшайте своих вайфу, открывайте новые навыки и создавайте идеальную команду.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Подвал -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <div class="logo-text">Waifu<span>Warfare</span></div>
+                </div>
+                
+                <div class="footer-links">
+                    <a href="#" onclick="downloadPrivacyPolicy()">Политика конфиденциальности</a>
+                    <a href="#" onclick="downloadTerms()">Условия использования</a>
+                    <a href="#">Поддержка</a>
+                    <a href="#">О нас</a>
+                    <a href="#">Карьера</a>
+                </div>
+                
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="fab fa-discord"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-reddit"></i></a>
+                </div>
+                
+                <p class="copyright">© 2023 Waifu Warfare: Tower Tactics. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Ключ для LocalStorage
+        const STORAGE_KEY = 'waifu_warfare_registrations';
+        
+        // Таймер обратного отсчета
+        function updateCountdown() {
+            const launchDate = new Date('2026-06-01T00:00:00').getTime();
+            const now = new Date().getTime();
+            const timeLeft = launchDate - now;
+            
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            
+            document.getElementById('days').textContent = days.toString().padStart(2, '0');
+            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+        }
+        
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+        
+        // Выбор платформы
+        function selectPlatform(element) {
+            const platforms = document.querySelectorAll('.platform');
+            platforms.forEach(platform => platform.classList.remove('selected'));
+            element.classList.add('selected');
+            element.querySelector('input').checked = true;
+        }
+        
+        // Получить все регистрации из LocalStorage
+        function getRegistrations() {
+            const registrations = localStorage.getItem(STORAGE_KEY);
+            return registrations ? JSON.parse(registrations) : [];
+        }
+        
+        // Сохранить регистрацию в LocalStorage
+        function saveRegistration(registration) {
+            const registrations = getRegistrations();
+            registrations.push(registration);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(registrations));
+            updateRegistrationCount();
+        }
+        
+        // Обновить счетчик регистраций
+        function updateRegistrationCount() {
+            const registrations = getRegistrations();
+            document.getElementById('registrations-count').textContent = registrations.length;
+        }
+        
+        // Создать файл для скачивания
+        function createRegistrationFile() {
+            const registrations = getRegistrations();
+            let fileContent = "=== СПИСОК ПРЕДРЕГИСТРАЦИЙ WAIYU WARFARE: TOWER TACTICS ===\n\n";
+            fileContent += `Всего зарегистрировано: ${registrations.length} игроков\n`;
+            fileContent += `Дата экспорта: ${new Date().toLocaleString('ru-RU')}\n\n`;
+            
+            registrations.forEach((reg, index) => {
+                fileContent += `=== Регистрация #${index + 1} ===\n`;
+                fileContent += `Дата/время: ${reg.timestamp}\n`;
+                fileContent += `Email: ${reg.email}\n`;
+                fileContent += `Имя игрока: ${reg.username}\n`;
+                fileContent += `Платформа: ${reg.platform}\n`;
+                fileContent += `Регион: ${reg.region}\n`;
+                fileContent += `ID: ${reg.id}\n`;
+                fileContent += "==================\n\n";
+            });
+            
+            return fileContent;
+        }
+        
+        // Скачать файл
+        function downloadFile(content, filename) {
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Показать регистрации
+        function viewRegistrations() {
+            const container = document.getElementById('registrations-container');
+            const list = document.getElementById('registrations-list');
+            const registrations = getRegistrations();
+            
+            if (registrations.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #FFE866;">Нет зарегистрированных игроков</p>';
+            } else {
+                let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">';
+                
+                registrations.forEach((reg, index) => {
+                    html += `
+                        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2);">
+                            <div style="color: var(--primary); font-weight: bold; margin-bottom: 10px;">
+                                Игрок #${index + 1}
+                            </div>
+                            <div style="margin-bottom: 5px;">
+                                <span style="color: #FFE866;">Имя:</span> ${reg.username}
+                            </div>
+                            <div style="margin-bottom: 5px;">
+                                <span style="color: #FFE866;">Email:</span> ${reg.email}
+                            </div>
+                            <div style="margin-bottom: 5px;">
+                                <span style="color: #FFE866;">Платформа:</span> ${reg.platform === 'pc' ? 'PC' : 'Mobile'}
+                            </div>
+                            <div style="margin-bottom: 5px;">
+                                <span style="color: #FFE866;">Регион:</span> ${getRegionName(reg.region)}
+                            </div>
+                            <div style="font-size: 0.8em; color: #AAAAAA;">
+                                ${reg.timestamp}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                list.innerHTML = html;
+            }
+            
+            container.style.display = 'block';
+            container.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Скачать все регистрации
+        function downloadRegistrations() {
+            const content = createRegistrationFile();
+            downloadFile(content, `waifu_warfare_registrations_${new Date().toISOString().split('T')[0]}.txt`);
+        }
+        
+        // Очистить LocalStorage (только для тестирования)
+        function clearLocalStorage() {
+            if (confirm('Вы уверены, что хотите очистить все данные регистраций? Это действие нельзя отменить.')) {
+                localStorage.removeItem(STORAGE_KEY);
+                updateRegistrationCount();
+                document.getElementById('registrations-list').innerHTML = '<p style="text-align: center; color: #FFE866;">Нет зарегистрированных игроков</p>';
+                alert('Данные очищены!');
+            }
+        }
+        
+        // Получить название региона по коду
+        function getRegionName(code) {
+            const regions = {
+                'eu': 'Европа',
+                'na': 'Северная Америка',
+                'asia': 'Азия',
+                'other': 'Другой'
+            };
+            return regions[code] || code;
+        }
+        
+        // Скачать политику конфиденциальности
+        function downloadPrivacyPolicy() {
+            const content = `ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ
+
+Waifu Warfare: Tower Tactics
+
+1. Сбор данных
+Мы собираем только необходимую информацию для предварительной регистрации:
+- Email адрес
+- Имя игрока
+- Предпочитаемая платформа
+- Регион
+
+2. Использование данных
+Данные используются исключительно для:
+- Уведомления о запуске игры
+- Предоставления доступа к демо-версии
+- Статистики и анализа интереса к игре
+
+3. Хранение данных
+Данные хранятся локально в браузере пользователя и могут быть экспортированы в текстовый файл.
+
+4. Ваши права
+Вы можете запросить удаление ваших данных, связавшись с нами.
+
+Дата последнего обновления: ${new Date().toLocaleDateString('ru-RU')}`;
+            
+            downloadFile(content, 'privacy_policy.txt');
+        }
+        
+        // Скачать условия использования
+        function downloadTerms() {
+            const content = `УСЛОВИЯ ИСПОЛЬЗОВАНИЯ
+
+Waifu Warfare: Tower Tactics
+
+1. Общие положения
+Предварительная регистрация не гарантирует доступ к полной версии игры.
+
+2. Ограничения
+Игра предназначена для пользователей старше 12 лет.
+
+3. Контактная информация
+По вопросам предварительной регистрации обращайтесь через сайт.
+
+Дата последнего обновления: ${new Date().toLocaleDateString('ru-RU')}`;
+            
+            downloadFile(content, 'terms_of_use.txt');
+        }
+        
+        // Обработка формы
+        document.getElementById('prereg-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.querySelector('.submit-btn');
+            const submitText = document.getElementById('submit-text');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const messageDiv = document.getElementById('form-message');
+            
+            // Показываем индикатор загрузки
+            submitText.style.display = 'none';
+            loadingSpinner.style.display = 'inline';
+            submitBtn.disabled = true;
+            messageDiv.style.display = 'none';
+            
+            // Собираем данные формы
+            const email = document.getElementById('email').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const platform = document.querySelector('input[name="platform"]:checked');
+            const region = document.getElementById('region').value;
+            
+            // Валидация
+            if (!platform) {
+                showMessage('Пожалуйста, выберите платформу', 'error');
+                submitText.style.display = 'inline';
+                loadingSpinner.style.display = 'none';
+                submitBtn.disabled = false;
+                return;
+            }
+            
+            // Создаем объект регистрации
+            const registration = {
+                id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+                timestamp: new Date().toLocaleString('ru-RU'),
+                email: email,
+                username: username,
+                platform: platform.value,
+                region: region,
+                userAgent: navigator.userAgent
+            };
+            
+            // Сохраняем в LocalStorage
+            try {
+                saveRegistration(registration);
+                
+                // Создаем файл с одной регистрацией для скачивания
+                const fileContent = `=== ПОДТВЕРЖДЕНИЕ РЕГИСТРАЦИИ ===
+
+Благодарим вас за предварительную регистрацию в Waifu Warfare: Tower Tactics!
+
+Детали вашей регистрации:
+Дата/время: ${registration.timestamp}
+Email: ${registration.email}
+Имя игрока: ${registration.username}
+Платформа: ${registration.platform === 'pc' ? 'PC' : 'Mobile'}
+Регион: ${getRegionName(registration.region)}
+ID регистрации: ${registration.id}
+
+Что дальше?
+1. Сохраните этот файл как подтверждение регистрации
+2. Следите за обновлениями на нашем сайте
+3. Ожидайте уведомления о запуске игры
+
+С уважением,
+Команда Waifu Warfare: Tower Tactics`;
+                
+                // Показываем сообщение об успехе
+                showMessage(`Спасибо за предрегистрацию, командир ${username}! Мы отправили подтверждение на ${email}.`, 'success');
+                
+                // Скачиваем подтверждение
+                setTimeout(() => {
+                    downloadFile(fileContent, `waifu_warfare_registration_${registration.id}.txt`);
+                }, 1000);
+                
+                // Очищаем форму
+                this.reset();
+                document.querySelectorAll('.platform').forEach(p => p.classList.remove('selected'));
+                
+                // Прокручиваем к сообщению
+                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+            } catch (error) {
+                showMessage('Ошибка при сохранении данных. Пожалуйста, попробуйте снова.', 'error');
+                console.error('Ошибка сохранения:', error);
+            } finally {
+                // Скрываем индикатор загрузки
+                submitText.style.display = 'inline';
+                loadingSpinner.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // Показать сообщение
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('form-message');
+            messageDiv.textContent = text;
+            messageDiv.style.display = 'block';
+            messageDiv.style.padding = '12px';
+            messageDiv.style.borderRadius = '8px';
+            messageDiv.style.textAlign = 'center';
+            messageDiv.style.fontWeight = '500';
+            
+            if (type === 'success') {
+                messageDiv.style.color = '#4CAF50';
+                messageDiv.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
+                messageDiv.style.border = '1px solid #4CAF50';
+            } else {
+                messageDiv.style.color = '#f44336';
+                messageDiv.style.backgroundColor = 'rgba(244, 67, 54, 0.1)';
+                messageDiv.style.border = '1px solid #f44336';
+            }
+        }
+        
+        // Изменение шапки при прокрутке
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+        
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            updateRegistrationCount();
+        });
+        
+        // Добавляем стили для сообщений формы
+        const style = document.createElement('style');
+        style.textContent = `
+            #form-message i {
+                margin-right: 8px;
+            }
+            .submit-btn:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+            }
+            #registrations-list::-webkit-scrollbar {
+                width: 8px;
+            }
+            #registrations-list::-webkit-scrollbar-track {
+                background: rgba(255,255,255,0.05);
+                border-radius: 4px;
+            }
+            #registrations-list::-webkit-scrollbar-thumb {
+                background: var(--primary);
+                border-radius: 4px;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
 </body>
 </html>
