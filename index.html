@@ -7,35 +7,31 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        .error-message {
-            color: #f44336;
+        .status-message {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 5px;
             font-size: 0.9rem;
-            margin-top: 5px;
             display: none;
-            padding: 5px;
-            border-radius: 4px;
+        }
+        .error-status {
             background: rgba(244, 67, 54, 0.1);
+            color: #f44336;
             border-left: 3px solid #f44336;
         }
-        .success-message {
-            color: #4CAF50;
-            font-size: 0.9rem;
-            margin-top: 5px;
-            display: none;
-            padding: 5px;
-            border-radius: 4px;
+        .success-status {
             background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
             border-left: 3px solid #4CAF50;
         }
-        .checking {
-            color: #FFD700;
-            font-size: 0.9rem;
-            margin-top: 5px;
-            display: none;
-            padding: 5px;
-            border-radius: 4px;
+        .checking-status {
             background: rgba(255, 215, 0, 0.1);
+            color: #FFD700;
             border-left: 3px solid #FFD700;
+        }
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -104,30 +100,26 @@
                     <div class="form-group">
                         <label for="email">Email адрес</label>
                         <input type="email" id="email" name="email" placeholder="your@email.com" required>
-                        <div class="error-message" id="email-error"></div>
-                        <div class="success-message" id="email-success">✓ Email свободен</div>
-                        <div class="checking" id="email-checking">Проверяем email...</div>
+                        <div class="status-message" id="email-status"></div>
                     </div>
                     
                     <!-- Поле для имени игрока -->
                     <div class="form-group">
                         <label for="username">Желаемое имя игрока</label>
                         <input type="text" id="username" name="username" placeholder="Введите имя командира" required>
-                        <div class="error-message" id="username-error"></div>
-                        <div class="success-message" id="username-success">✓ Имя свободно</div>
-                        <div class="checking" id="username-checking">Проверяем имя...</div>
+                        <div class="status-message" id="username-status"></div>
                     </div>
                     
                     <!-- Выбор платформы -->
                     <div class="form-group">
                         <label>Предпочитаемая платформа</label>
                         <div class="platforms">
-                            <div class="platform" onclick="selectPlatform(this, 'PC')">
+                            <div class="platform" onclick="selectPlatform(this)">
                                 <input type="radio" name="platform" value="PC" required>
                                 <i class="fas fa-desktop"></i>
                                 <span>PC</span>
                             </div>
-                            <div class="platform" onclick="selectPlatform(this, 'Mobile')">
+                            <div class="platform" onclick="selectPlatform(this)">
                                 <input type="radio" name="platform" value="Mobile">
                                 <i class="fas fa-mobile-alt"></i>
                                 <span>Mobile</span>
@@ -147,7 +139,7 @@
                         </select>
                     </div>
                     
-                    <button type="submit" class="submit-btn" id="submit-btn" disabled>
+                    <button type="submit" class="submit-btn" id="submit-btn">
                         <span id="submit-text">Забронировать место</span>
                         <span id="loading-spinner" style="display: none;">
                             <i class="fas fa-spinner fa-spin"></i> Регистрируем...
@@ -232,13 +224,8 @@
     </footer>
 
     <script>
-        // URL вашего Google Apps Script (ЗАМЕНИТЕ НА ВАШ!)
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzyPuzt1cu8Rm18xwL8o7XgX_WWD3Lq-mV9ksELnU3jlACsCrz8O8eoxP_4ay6ZH_Ba/exec';
-        
-        // Состояние проверки
-        let emailValid = false;
-        let usernameValid = false;
-        let isChecking = false;
+        // URL вашего Google Apps Script
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxdIbsw2IpuPA2-5tr07vvQpbVAfNMZ4NlfFwtZV9BcDkH8YP9uOMZ85dn8RSFd9zTV/exec';
         
         // Таймер обратного отсчета
         function updateCountdown() {
@@ -261,244 +248,150 @@
         updateCountdown();
         
         // Выбор платформы
-        function selectPlatform(element, value) {
+        function selectPlatform(element) {
             const platforms = document.querySelectorAll('.platform');
             platforms.forEach(platform => platform.classList.remove('selected'));
             element.classList.add('selected');
             element.querySelector('input').checked = true;
+            checkFormValidity();
         }
         
-        // Функция для проверки дубликатов
-        async function checkForDuplicates(email, username) {
-            if (isChecking) return;
-            
-            isChecking = true;
-            const params = new URLSearchParams();
-            params.append('action', 'check_duplicate');
-            
-            if (email) params.append('email', email);
-            if (username) params.append('username', username);
-            
-            try {
-                const response = await fetch(`${API_URL}?${params.toString()}`);
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error('Ошибка проверки:', error);
-                return { email_exists: false, username_exists: false, can_register: true };
-            } finally {
-                isChecking = false;
-            }
+        // Показать статус сообщение
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = 'status-message ' + type + '-status';
+            element.style.display = 'block';
         }
         
-        // Функция для регистрации
-        async function registerUser(data) {
-            const params = new URLSearchParams();
-            params.append('action', 'register');
-            params.append('email', data.email);
-            params.append('username', data.username);
-            params.append('platform', data.platform);
-            params.append('region', data.region);
-            
-            try {
-                const response = await fetch(`${API_URL}?${params.toString()}`);
-                return await response.json();
-            } catch (error) {
-                console.error('Ошибка регистрации:', error);
-                throw error;
-            }
+        // Скрыть статус сообщение
+        function hideStatus(elementId) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'none';
         }
         
-        // Валидация формы
-        function validateForm(email, username) {
-            let isValid = true;
-            
-            // Валидация email
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                showFieldError('email', 'Введите корректный email адрес');
-                isValid = false;
-            }
-            
-            // Валидация ника
-            if (username.length < 3) {
-                showFieldError('username', 'Имя должно быть не менее 3 символов');
-                isValid = false;
-            }
-            
-            if (username.length > 20) {
-                showFieldError('username', 'Имя должно быть не более 20 символов');
-                isValid = false;
-            }
-            
-            const usernameRegex = /^[a-zA-Z0-9_\-]+$/;
-            if (!usernameRegex.test(username)) {
-                showFieldError('username', 'Имя может содержать только буквы, цифры, дефисы и подчеркивания');
-                isValid = false;
-            }
-            
-            return isValid;
-        }
-        
-        // Показать ошибку поля
-        function showFieldError(field, message) {
-            const errorDiv = document.getElementById(`${field}-error`);
-            const successDiv = document.getElementById(`${field}-success`);
-            const checkingDiv = document.getElementById(`${field}-checking`);
-            
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            successDiv.style.display = 'none';
-            checkingDiv.style.display = 'none';
-            
-            // Обновляем состояние
-            if (field === 'email') emailValid = false;
-            if (field === 'username') usernameValid = false;
-            updateSubmitButton();
-        }
-        
-        // Показать успех поля
-        function showFieldSuccess(field) {
-            const errorDiv = document.getElementById(`${field}-error`);
-            const successDiv = document.getElementById(`${field}-success`);
-            const checkingDiv = document.getElementById(`${field}-checking`);
-            
-            errorDiv.style.display = 'none';
-            successDiv.style.display = 'block';
-            checkingDiv.style.display = 'none';
-            
-            // Обновляем состояние
-            if (field === 'email') emailValid = true;
-            if (field === 'username') usernameValid = true;
-            updateSubmitButton();
-        }
-        
-        // Показать проверку поля
-        function showFieldChecking(field) {
-            const errorDiv = document.getElementById(`${field}-error`);
-            const successDiv = document.getElementById(`${field}-success`);
-            const checkingDiv = document.getElementById(`${field}-checking`);
-            
-            errorDiv.style.display = 'none';
-            successDiv.style.display = 'none';
-            checkingDiv.style.display = 'block';
-        }
-        
-        // Обновить кнопку отправки
-        function updateSubmitButton() {
-            const submitBtn = document.getElementById('submit-btn');
-            const platform = document.querySelector('input[name="platform"]:checked');
-            const region = document.getElementById('region').value;
-            
-            if (emailValid && usernameValid && platform && region) {
-                submitBtn.disabled = false;
-                submitBtn.style.opacity = '1';
-                submitBtn.style.cursor = 'pointer';
-            } else {
-                submitBtn.disabled = true;
-                submitBtn.style.opacity = '0.7';
-                submitBtn.style.cursor = 'not-allowed';
-            }
-        }
-        
-        // Проверка email при вводе
+        // Проверка email
         let emailTimeout;
-        document.getElementById('email').addEventListener('input', async function() {
+        document.getElementById('email').addEventListener('input', function() {
             const email = this.value.trim();
-            
             clearTimeout(emailTimeout);
             
             // Базовая валидация
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                if (email.length > 0) {
-                    showFieldError('email', 'Введите корректный email адрес');
-                } else {
-                    const errorDiv = document.getElementById('email-error');
-                    const successDiv = document.getElementById('email-success');
-                    const checkingDiv = document.getElementById('email-checking');
-                    errorDiv.style.display = 'none';
-                    successDiv.style.display = 'none';
-                    checkingDiv.style.display = 'none';
-                    emailValid = false;
-                    updateSubmitButton();
-                }
+            if (!emailRegex.test(email) && email.length > 0) {
+                showStatus('email-status', 'Введите корректный email', 'error');
                 return;
             }
             
-            // Показываем индикатор проверки
-            showFieldChecking('email');
+            if (email.length === 0) {
+                hideStatus('email-status');
+                return;
+            }
+            
+            // Показываем проверку
+            showStatus('email-status', 'Проверяем email...', 'checking');
             
             emailTimeout = setTimeout(async () => {
-                const result = await checkForDuplicates(email, null);
-                
-                if (result.email_exists) {
-                    showFieldError('email', 'Этот email уже зарегистрирован');
-                } else {
-                    showFieldSuccess('email');
+                try {
+                    const response = await fetch(`${API_URL}?action=check&email=${encodeURIComponent(email)}`);
+                    const data = await response.json();
+                    
+                    if (data.email_exists) {
+                        showStatus('email-status', 'Этот email уже зарегистрирован', 'error');
+                    } else {
+                        showStatus('email-status', '✓ Email свободен', 'success');
+                    }
+                } catch (error) {
+                    showStatus('email-status', 'Ошибка проверки', 'error');
                 }
             }, 800);
         });
         
-        // Проверка ника при вводе
+        // Проверка ника
         let usernameTimeout;
-        document.getElementById('username').addEventListener('input', async function() {
+        document.getElementById('username').addEventListener('input', function() {
             const username = this.value.trim();
-            
             clearTimeout(usernameTimeout);
             
             // Базовая валидация
-            if (username.length < 3) {
-                if (username.length > 0) {
-                    showFieldError('username', 'Имя должно быть не менее 3 символов');
-                } else {
-                    const errorDiv = document.getElementById('username-error');
-                    const successDiv = document.getElementById('username-success');
-                    const checkingDiv = document.getElementById('username-checking');
-                    errorDiv.style.display = 'none';
-                    successDiv.style.display = 'none';
-                    checkingDiv.style.display = 'none';
-                    usernameValid = false;
-                    updateSubmitButton();
-                }
+            if (username.length < 3 && username.length > 0) {
+                showStatus('username-status', 'Имя должно быть не менее 3 символов', 'error');
                 return;
             }
             
             if (username.length > 20) {
-                showFieldError('username', 'Имя должно быть не более 20 символов');
+                showStatus('username-status', 'Имя должно быть не более 20 символов', 'error');
+                return;
+            }
+            
+            if (username.length === 0) {
+                hideStatus('username-status');
                 return;
             }
             
             const usernameRegex = /^[a-zA-Z0-9_\-]+$/;
             if (!usernameRegex.test(username)) {
-                showFieldError('username', 'Имя может содержать только буквы, цифры, дефисы и подчеркивания');
+                showStatus('username-status', 'Только буквы, цифры, дефисы и подчеркивания', 'error');
                 return;
             }
             
-            // Показываем индикатор проверки
-            showFieldChecking('username');
+            // Показываем проверку
+            showStatus('username-status', 'Проверяем имя...', 'checking');
             
             usernameTimeout = setTimeout(async () => {
-                const result = await checkForDuplicates(null, username);
-                
-                if (result.username_exists) {
-                    showFieldError('username', 'Это имя игрока уже занято');
-                } else {
-                    showFieldSuccess('username');
+                try {
+                    const response = await fetch(`${API_URL}?action=check&username=${encodeURIComponent(username)}`);
+                    const data = await response.json();
+                    
+                    if (data.username_exists) {
+                        showStatus('username-status', 'Это имя уже занято', 'error');
+                    } else {
+                        showStatus('username-status', '✓ Имя свободно', 'success');
+                    }
+                } catch (error) {
+                    showStatus('username-status', 'Ошибка проверки', 'error');
                 }
             }, 800);
         });
         
-        // Слушаем изменения платформы и региона
-        document.querySelectorAll('input[name="platform"]').forEach(input => {
-            input.addEventListener('change', updateSubmitButton);
-        });
+        // Проверка валидности формы
+        function checkFormValidity() {
+            const email = document.getElementById('email').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const platform = document.querySelector('input[name="platform"]:checked');
+            const region = document.getElementById('region').value;
+            const submitBtn = document.getElementById('submit-btn');
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const usernameRegex = /^[a-zA-Z0-9_\-]+$/;
+            
+            const isValid = emailRegex.test(email) && 
+                           username.length >= 3 && 
+                           username.length <= 20 && 
+                           usernameRegex.test(username) && 
+                           platform && 
+                           region;
+            
+            submitBtn.disabled = !isValid;
+            return isValid;
+        }
         
-        document.getElementById('region').addEventListener('change', updateSubmitButton);
+        // Слушаем изменения
+        document.getElementById('email').addEventListener('input', checkFormValidity);
+        document.getElementById('username').addEventListener('input', checkFormValidity);
+        document.getElementById('region').addEventListener('change', checkFormValidity);
+        document.querySelectorAll('input[name="platform"]').forEach(input => {
+            input.addEventListener('change', checkFormValidity);
+        });
         
         // Обработка отправки формы
         document.getElementById('prereg-form').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            if (!checkFormValidity()) {
+                showMessage('Заполните все поля корректно', 'error');
+                return;
+            }
             
             const submitBtn = document.getElementById('submit-btn');
             const submitText = document.getElementById('submit-text');
@@ -508,30 +401,8 @@
             // Получаем данные формы
             const email = document.getElementById('email').value.trim();
             const username = document.getElementById('username').value.trim();
-            const platform = document.querySelector('input[name="platform"]:checked');
+            const platform = document.querySelector('input[name="platform"]:checked').value;
             const region = document.getElementById('region').value;
-            
-            // Проверяем, выбрана ли платформа и регион
-            if (!platform) {
-                showMessage('Пожалуйста, выберите платформу', 'error');
-                return;
-            }
-            
-            if (!region) {
-                showMessage('Пожалуйста, выберите регион', 'error');
-                return;
-            }
-            
-            // Базовая валидация
-            if (!validateForm(email, username)) {
-                return;
-            }
-            
-            // Проверяем, что все проверки пройдены
-            if (!emailValid || !usernameValid) {
-                showMessage('Пожалуйста, дождитесь завершения проверки данных', 'error');
-                return;
-            }
             
             // Показываем индикатор загрузки
             submitText.style.display = 'none';
@@ -540,58 +411,45 @@
             messageDiv.style.display = 'none';
             
             try {
-                // Регистрируем пользователя через API
-                const result = await registerUser({
-                    email: email,
-                    username: username,
-                    platform: platform.value,
-                    region: region
-                });
+                // Регистрируем пользователя
+                const params = new URLSearchParams();
+                params.append('action', 'register');
+                params.append('email', email);
+                params.append('username', username);
+                params.append('platform', platform);
+                params.append('region', region);
+                
+                const response = await fetch(`${API_URL}?${params.toString()}`);
+                const result = await response.json();
                 
                 if (result.success) {
-                    // Успешная регистрация
-                    showMessage(`Спасибо за предрегистрацию, командир ${username}! Вы успешно зарегистрированы.`, 'success');
+                    showMessage(`Успешная регистрация, командир ${username}!`, 'success');
                     
                     // Очищаем форму
                     this.reset();
                     document.querySelectorAll('.platform').forEach(p => p.classList.remove('selected'));
+                    hideStatus('email-status');
+                    hideStatus('username-status');
                     
-                    // Сбрасываем состояние
-                    emailValid = false;
-                    usernameValid = false;
-                    updateSubmitButton();
-                    
-                    // Сбрасываем сообщения
-                    document.querySelectorAll('.error-message, .success-message, .checking').forEach(el => {
-                        el.style.display = 'none';
-                    });
-                    
-                } else if (result.email_exists || result.username_exists) {
-                    // Обнаружен дубликат (хотя мы проверяли заранее)
-                    let errorMsg = '';
-                    if (result.email_exists && result.username_exists) {
-                        errorMsg = 'Email и имя игрока уже зарегистрированы';
-                    } else if (result.email_exists) {
-                        errorMsg = 'Email уже зарегистрирован';
-                        showFieldError('email', 'Этот email уже зарегистрирован');
-                    } else {
-                        errorMsg = 'Имя игрока уже занято';
-                        showFieldError('username', 'Это имя игрока уже занято');
-                    }
-                    showMessage(errorMsg, 'error');
+                } else if (result.email_exists) {
+                    showMessage('Этот email уже зарегистрирован', 'error');
+                    showStatus('email-status', 'Этот email уже зарегистрирован', 'error');
+                } else if (result.username_exists) {
+                    showMessage('Это имя уже занято', 'error');
+                    showStatus('username-status', 'Это имя уже занято', 'error');
                 } else {
-                    showMessage('Ошибка при регистрации. Пожалуйста, попробуйте еще раз.', 'error');
+                    showMessage('Ошибка регистрации: ' + (result.error || 'Неизвестная ошибка'), 'error');
                 }
                 
             } catch (error) {
-                console.error('Ошибка:', error);
-                showMessage('Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.', 'error');
+                console.error('Registration error:', error);
+                showMessage('Ошибка сети. Проверьте интернет и попробуйте снова.', 'error');
             } finally {
                 // Скрываем индикатор загрузки
                 submitText.style.display = 'inline';
                 loadingSpinner.style.display = 'none';
                 submitBtn.disabled = false;
-                updateSubmitButton();
+                checkFormValidity();
             }
         });
         
@@ -627,19 +485,14 @@ Waifu Warfare: Tower Tactics
 
 1. Сбор данных
 Данные собираются через Google Apps Script API и хранятся в Google Таблице.
-Мы собираем только необходимую информацию для предварительной регистрации.
 
-2. Проверка уникальности
-Каждый email и имя игрока проверяются на уникальность перед регистрацией.
-Дублирование данных не допускается.
+2. Уникальность данных
+Каждый email и имя игрока проверяются на уникальность.
 
 3. Использование данных
-Данные используются исключительно для:
-- Уведомления о запуске игры
-- Предоставления доступа к демо-версии
-- Статистики и анализа интереса к игре
+Данные используются для уведомления о запуске игры.
 
-Дата последнего обновления: ${new Date().toLocaleDateString('ru-RU')}`;
+Дата: ${new Date().toLocaleDateString('ru-RU')}`;
             
             downloadFile(content, 'privacy_policy.txt');
         }
@@ -653,15 +506,14 @@ Waifu Warfare: Tower Tactics
 1. Уникальность данных
 - Каждое имя игрока должно быть уникальным
 - Каждый email адрес может быть использован только один раз
-- Попытки создать дубликат аккаунта будут отклонены
 
 2. Ответственность
-Пользователь несет ответственность за достоверность предоставленных данных.
+Пользователь несет ответственность за достоверность данных.
 
 3. Возрастное ограничение
 Игра предназначена для пользователей старше 12 лет.
 
-Дата последнего обновления: ${new Date().toLocaleDateString('ru-RU')}`;
+Дата: ${new Date().toLocaleDateString('ru-RU')}`;
             
             downloadFile(content, 'terms_of_use.txt');
         }
@@ -690,12 +542,11 @@ Waifu Warfare: Tower Tactics
             }
         });
         
-        // Инициализация при загрузке страницы
+        // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Система проверки дубликатов готова к работе');
-            updateSubmitButton(); // Начальное состояние кнопки
+            console.log('Registration system loaded');
+            checkFormValidity();
         });
     </script>
 </body>
 </html>
-
