@@ -67,34 +67,32 @@
         <div class="container">
             <h2 class="section-title">Предрегистрация</h2>
             <div class="form-container">
-                <!-- Замените FORM_ID на ID вашей Google Forms -->
-                <form id="prereg-form" action="https://docs.google.com/forms/d/e/1FAIpQLSe9sMpZCN6GkJ1ObncNjM395iAxCOtQzO9IWD1u9vEn-NEQqA/viewform?usp=dialog" method="POST" target="hidden_iframe">
+                <form id="prereg-form">
                     <!-- Поле для email -->
                     <div class="form-group">
                         <label for="email">Email адрес</label>
-                        <input type="email" id="email" name="entry.999095683" placeholder="your@email.com" required>
-                        <!-- Замените entry.1234567890 на ID поля из Google Forms -->
+                        <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                        <div class="error-message" id="email-error" style="color: #f44336; font-size: 0.9rem; margin-top: 5px; display: none;"></div>
                     </div>
                     
                     <!-- Поле для имени игрока -->
                     <div class="form-group">
                         <label for="username">Желаемое имя игрока</label>
-                        <input type="text" id="username" name="entry.98181250" placeholder="Введите имя командира" required>
-                        <!-- Замените entry.0987654321 на ID поля из Google Forms -->
+                        <input type="text" id="username" name="username" placeholder="Введите имя командира" required>
+                        <div class="error-message" id="username-error" style="color: #f44336; font-size: 0.9rem; margin-top: 5px; display: none;"></div>
                     </div>
                     
                     <!-- Выбор платформы -->
                     <div class="form-group">
                         <label>Предпочитаемая платформа</label>
                         <div class="platforms">
-                            <div class="platform" onclick="selectPlatform(this, 'pc')">
-                                <input type="radio" name="entry.1215322470" value="PC" required>
-                                <!-- Замените entry.1122334455 на ID поля из Google Forms -->
+                            <div class="platform" onclick="selectPlatform(this, 'PC')">
+                                <input type="radio" name="platform" value="PC" required>
                                 <i class="fas fa-desktop"></i>
                                 <span>PC</span>
                             </div>
-                            <div class="platform" onclick="selectPlatform(this, 'mobile')">
-                                <input type="radio" name="entry.1215322470" value="Mobile">
+                            <div class="platform" onclick="selectPlatform(this, 'Mobile')">
+                                <input type="radio" name="platform" value="Mobile">
                                 <i class="fas fa-mobile-alt"></i>
                                 <span>Mobile</span>
                             </div>
@@ -104,8 +102,7 @@
                     <!-- Выбор региона -->
                     <div class="form-group">
                         <label for="region">Регион</label>
-                        <select id="region" name="entry.1988334779" required>
-                            <!-- Замените entry.5566778899 на ID поля из Google Forms -->
+                        <select id="region" name="region" required>
                             <option value="" disabled selected>Выберите регион</option>
                             <option value="Европа">Европа</option>
                             <option value="Северная Америка">Северная Америка</option>
@@ -114,21 +111,14 @@
                         </select>
                     </div>
                     
-                    <!-- Скрытые поля для времени -->
-                    <input type="hidden" id="timestamp" name="entry.6677889900" value="">
-                    <input type="hidden" id="user_agent" name="entry.7788990011" value="">
-                    
                     <button type="submit" class="submit-btn">
                         <span id="submit-text">Забронировать место</span>
                         <span id="loading-spinner" style="display: none;">
-                            <i class="fas fa-spinner fa-spin"></i> Отправка...
+                            <i class="fas fa-spinner fa-spin"></i> Проверка данных...
                         </span>
                     </button>
                     <div id="form-message" style="margin-top: 15px; display: none;"></div>
                 </form>
-                
-                <!-- Скрытый iframe для отправки формы -->
-                <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
             </div>
         </div>
     </section>
@@ -188,7 +178,7 @@
                 <div class="footer-links">
                     <a href="#" onclick="downloadPrivacyPolicy()">Политика конфиденциальности</a>
                     <a href="#" onclick="downloadTerms()">Условия использования</a>
-                    <a href="https://forms.gle/YOUR_FORM_LINK" target="_blank">Посмотреть регистрации</a>
+                    <a href="https://docs.google.com/spreadsheets/d/1o9T6bctuz0LmBtLjgRE4iF-2U1P6EGQm3LX9gnN-1S0/edit?resourcekey=&gid=456535175#gid=456535175" target="_blank">Посмотреть регистрации</a>
                     <a href="#">Поддержка</a>
                     <a href="#">О нас</a>
                 </div>
@@ -206,6 +196,11 @@
     </footer>
 
     <script>
+        // Конфигурация Google Sheets
+        const SPREADSHEET_ID = '1o9T6bctuz0LmBtLjgRE4iF-2U1P6EGQm3LX9gnN-1S0';
+        const SHEET_NAME = 'Ответы на форму (1)';
+        const API_KEY = 'AIzaSyB_0oM_GgR2pdb-lJ9Y09fRO9zZscnEYAw'; // Будет использоваться ограниченный доступ
+        
         // Таймер обратного отсчета
         function updateCountdown() {
             const launchDate = new Date('2026-06-01T00:00:00').getTime();
@@ -234,16 +229,155 @@
             element.querySelector('input').checked = true;
         }
         
-        // Обработка формы
-        document.getElementById('prereg-form').addEventListener('submit', function(e) {
-            // Устанавливаем значения скрытых полей
-            document.getElementById('timestamp').value = new Date().toISOString();
-            document.getElementById('user_agent').value = navigator.userAgent;
+        // Функция для проверки уникальности ника через Google Sheets
+        async function checkUsernameExists(username) {
+            try {
+                // Создаем публичный доступ к таблице
+                const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+                
+                const response = await fetch(url);
+                const text = await response.text();
+                
+                // Парсим JSON из ответа Google Sheets
+                const json = JSON.parse(text.substring(47).slice(0, -2));
+                
+                if (json.table && json.table.rows) {
+                    const usernames = [];
+                    
+                    // Проходим по всем строкам таблицы
+                    json.table.rows.forEach(row => {
+                        if (row.c && row.c[1] && row.c[1].v) {
+                            usernames.push(row.c[1].v.toLowerCase().trim());
+                        }
+                    });
+                    
+                    // Проверяем, существует ли такой ник
+                    return usernames.includes(username.toLowerCase().trim());
+                }
+                
+                return false;
+            } catch (error) {
+                console.error('Ошибка при проверке ника:', error);
+                return false;
+            }
+        }
+        
+        // Функция для проверки уникальности email через Google Sheets
+        async function checkEmailExists(email) {
+            try {
+                const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+                
+                const response = await fetch(url);
+                const text = await response.text();
+                const json = JSON.parse(text.substring(47).slice(0, -2));
+                
+                if (json.table && json.table.rows) {
+                    const emails = [];
+                    
+                    json.table.rows.forEach(row => {
+                        if (row.c && row.c[0] && row.c[0].v) {
+                            emails.push(row.c[0].v.toLowerCase().trim());
+                        }
+                    });
+                    
+                    return emails.includes(email.toLowerCase().trim());
+                }
+                
+                return false;
+            } catch (error) {
+                console.error('Ошибка при проверке email:', error);
+                return false;
+            }
+        }
+        
+        // Функция для отправки данных в Google Forms
+        async function submitToGoogleForm(data) {
+            const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSe9sMpZCN6GkJ1ObncNjM395iAxCOtQzO9IWD1u9vEn-NEQqA/formResponse';
+            
+            const formData = new FormData();
+            formData.append('entry.999095683', data.email); // Email
+            formData.append('entry.98181250', data.username); // Ник
+            formData.append('entry.1215322470', data.platform); // Платформа
+            formData.append('entry.1988334779', data.region); // Регион
+            
+            try {
+                const response = await fetch(GOOGLE_FORM_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Важно для обхода CORS
+                    body: formData
+                });
+                
+                return true;
+            } catch (error) {
+                console.error('Ошибка отправки формы:', error);
+                return false;
+            }
+        }
+        
+        // Валидация формы
+        function validateForm(email, username) {
+            let isValid = true;
+            
+            // Сброс ошибок
+            document.getElementById('email-error').style.display = 'none';
+            document.getElementById('username-error').style.display = 'none';
+            
+            // Валидация email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                document.getElementById('email-error').textContent = 'Введите корректный email адрес';
+                document.getElementById('email-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            // Валидация ника
+            if (username.length < 3) {
+                document.getElementById('username-error').textContent = 'Имя должно быть не менее 3 символов';
+                document.getElementById('username-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (username.length > 20) {
+                document.getElementById('username-error').textContent = 'Имя должно быть не более 20 символов';
+                document.getElementById('username-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            const usernameRegex = /^[a-zA-Z0-9_\-]+$/;
+            if (!usernameRegex.test(username)) {
+                document.getElementById('username-error').textContent = 'Имя может содержать только буквы, цифры, дефисы и подчеркивания';
+                document.getElementById('username-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+        
+        // Обработка отправки формы
+        document.getElementById('prereg-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
             const submitBtn = document.querySelector('.submit-btn');
             const submitText = document.getElementById('submit-text');
             const loadingSpinner = document.getElementById('loading-spinner');
             const messageDiv = document.getElementById('form-message');
+            
+            // Получаем данные формы
+            const email = document.getElementById('email').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const platform = document.querySelector('input[name="platform"]:checked');
+            const region = document.getElementById('region').value;
+            
+            // Проверяем, выбрана ли платформа
+            if (!platform) {
+                showMessage('Пожалуйста, выберите платформу', 'error');
+                return;
+            }
+            
+            // Базовая валидация
+            if (!validateForm(email, username)) {
+                return;
+            }
             
             // Показываем индикатор загрузки
             submitText.style.display = 'none';
@@ -251,33 +385,141 @@
             submitBtn.disabled = true;
             messageDiv.style.display = 'none';
             
-            // Слушаем событие загрузки iframe
-            document.getElementById('hidden_iframe').onload = function() {
+            try {
+                // Проверяем уникальность email
+                const emailExists = await checkEmailExists(email);
+                if (emailExists) {
+                    showMessage('Этот email уже зарегистрирован. Пожалуйста, используйте другой email.', 'error');
+                    submitText.style.display = 'inline';
+                    loadingSpinner.style.display = 'none';
+                    submitBtn.disabled = false;
+                    return;
+                }
+                
+                // Проверяем уникальность ника
+                const usernameExists = await checkUsernameExists(username);
+                if (usernameExists) {
+                    showMessage('Это имя игрока уже занято. Пожалуйста, выберите другое имя.', 'error');
+                    submitText.style.display = 'inline';
+                    loadingSpinner.style.display = 'none';
+                    submitBtn.disabled = false;
+                    return;
+                }
+                
+                // Если все проверки пройдены, отправляем данные
+                const formData = {
+                    email: email,
+                    username: username,
+                    platform: platform.value,
+                    region: region,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Отправляем в Google Forms
+                const submitted = await submitToGoogleForm(formData);
+                
+                if (submitted) {
+                    // Успешная отправка
+                    showMessage(`Спасибо за предрегистрацию, командир ${username}! Данные успешно сохранены.`, 'success');
+                    
+                    // Очищаем форму
+                    this.reset();
+                    document.querySelectorAll('.platform').forEach(p => p.classList.remove('selected'));
+                    
+                    // Добавляем в локальное хранилище для кэширования
+                    const registeredUsers = JSON.parse(localStorage.getItem('waifuWarfareUsers') || '[]');
+                    registeredUsers.push({
+                        email: email.toLowerCase(),
+                        username: username.toLowerCase(),
+                        timestamp: new Date().toISOString()
+                    });
+                    localStorage.setItem('waifuWarfareUsers', JSON.stringify(registeredUsers));
+                } else {
+                    showMessage('Ошибка при отправке данных. Пожалуйста, попробуйте еще раз.', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showMessage('Произошла ошибка при обработке запроса. Пожалуйста, попробуйте позже.', 'error');
+            } finally {
+                // Скрываем индикатор загрузки
                 submitText.style.display = 'inline';
                 loadingSpinner.style.display = 'none';
                 submitBtn.disabled = false;
-                
-                // Показываем сообщение об успехе
-                messageDiv.style.display = 'block';
-                messageDiv.style.padding = '12px';
-                messageDiv.style.borderRadius = '8px';
-                messageDiv.style.textAlign = 'center';
-                messageDiv.style.fontWeight = '500';
+            }
+        });
+        
+        // Функция для отображения сообщений
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('form-message');
+            messageDiv.textContent = text;
+            messageDiv.style.display = 'block';
+            messageDiv.style.padding = '12px';
+            messageDiv.style.borderRadius = '8px';
+            messageDiv.style.textAlign = 'center';
+            messageDiv.style.fontWeight = '500';
+            
+            if (type === 'success') {
                 messageDiv.style.color = '#4CAF50';
                 messageDiv.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
                 messageDiv.style.border = '1px solid #4CAF50';
-                
-                const username = document.getElementById('username').value;
-                const email = document.getElementById('email').value;
-                messageDiv.innerHTML = `<i class="fas fa-check-circle"></i> Спасибо за предрегистрацию, командир ${username}! Данные сохранены в Google Forms.`;
-                
-                // Очищаем форму
-                document.getElementById('prereg-form').reset();
-                document.querySelectorAll('.platform').forEach(p => p.classList.remove('selected'));
-                
-                // Прокручиваем к сообщению
-                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            };
+            } else {
+                messageDiv.style.color = '#f44336';
+                messageDiv.style.backgroundColor = 'rgba(244, 67, 54, 0.1)';
+                messageDiv.style.border = '1px solid #f44336';
+            }
+            
+            // Прокручиваем к сообщению
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        // Проверка ника при вводе (реальное время)
+        let usernameCheckTimeout;
+        document.getElementById('username').addEventListener('input', function() {
+            const username = this.value.trim();
+            const errorDiv = document.getElementById('username-error');
+            
+            // Сбрасываем предыдущий таймер
+            clearTimeout(usernameCheckTimeout);
+            
+            if (username.length >= 3) {
+                // Ждем 500ms после последнего ввода
+                usernameCheckTimeout = setTimeout(async () => {
+                    const exists = await checkUsernameExists(username);
+                    if (exists) {
+                        errorDiv.textContent = 'Это имя игрока уже занято';
+                        errorDiv.style.display = 'block';
+                    } else {
+                        errorDiv.style.display = 'none';
+                    }
+                }, 500);
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        });
+        
+        // Проверка email при вводе (реальное время)
+        let emailCheckTimeout;
+        document.getElementById('email').addEventListener('input', function() {
+            const email = this.value.trim();
+            const errorDiv = document.getElementById('email-error');
+            
+            clearTimeout(emailCheckTimeout);
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (emailRegex.test(email)) {
+                emailCheckTimeout = setTimeout(async () => {
+                    const exists = await checkEmailExists(email);
+                    if (exists) {
+                        errorDiv.textContent = 'Этот email уже зарегистрирован';
+                        errorDiv.style.display = 'block';
+                    } else {
+                        errorDiv.style.display = 'none';
+                    }
+                }, 500);
+            } else {
+                errorDiv.style.display = 'none';
+            }
         });
         
         // Скачать политику конфиденциальности
@@ -286,18 +528,18 @@
 
 Waifu Warfare: Tower Tactics
 
-1. Сбор данных через Google Forms
+1. Сбор данных
 Данные собираются через Google Forms и хранятся на серверах Google.
 Мы собираем только необходимую информацию для предварительной регистрации.
 
-2. Использование данных
+2. Проверка уникальности
+Мы проверяем уникальность имен игроков и email адресов для предотвращения дублирования.
+
+3. Использование данных
 Данные используются исключительно для:
 - Уведомления о запуске игры
 - Предоставления доступа к демо-версии
 - Статистики и анализа интереса к игре
-
-3. Доступ к данным
-Доступ к данным имеют только администраторы проекта через Google Forms.
 
 Дата последнего обновления: ${new Date().toLocaleDateString('ru-RU')}`;
             
@@ -310,14 +552,14 @@ Waifu Warfare: Tower Tactics
 
 Waifu Warfare: Tower Tactics
 
-1. Общие положения
-Предварительная регистрация не гарантирует доступ к полной версии игры.
+1. Уникальность имени
+Каждое имя игрока должно быть уникальным. Дублирование имен не допускается.
 
-2. Ограничения
+2. Один аккаунт на email
+Один email адрес может быть использован только для одной регистрации.
+
+3. Возрастное ограничение
 Игра предназначена для пользователей старше 12 лет.
-
-3. Контактная информация
-По вопросам предварительной регистрации обращайтесь через сайт.
 
 Дата последнего обновления: ${new Date().toLocaleDateString('ru-RU')}`;
             
@@ -347,8 +589,12 @@ Waifu Warfare: Tower Tactics
                 header.classList.remove('scrolled');
             }
         });
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Система проверки ников и email готова к работе');
+            console.log('Используется Google Sheets таблица:', SPREADSHEET_ID);
+        });
     </script>
 </body>
 </html>
-
-
